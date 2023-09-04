@@ -133,11 +133,11 @@ selectArchS4Samples <- function(archs4_file = NULL,
                      taxid == taxid
                     )
 
-  co_terms <- MultiTIMER::co$name
+  co_terms <- co$name
   co_terms <- co_terms[-1]
   co_terms <- unname(co_terms)
 
-  to_terms <- MultiTIMER::to$name
+  to_terms <- to$name
   to_terms <- to_terms[-1]
   to_terms <- unname(to_terms)
 
@@ -159,11 +159,11 @@ selectArchS4Samples <- function(archs4_file = NULL,
   idx <- base::which(sapply(to_to_samples_char,base::length) > 0)
   to_to_samples_char <- to_to_samples_char[idx]
 
-  idx_co <- union(setdiff(unique(do.call("c",co_to_samples)),unique(do.call("c",co_to_samples[which((names(co_to_samples) %in% MultiTIMER::excludedTerms_env$co))]))),
-                  setdiff(unique(do.call("c",co_to_samples_char)),unique(do.call("c",co_to_samples_char[which((names(co_to_samples_char) %in% MultiTIMER::excludedTerms_env$co))])))
+  idx_co <- union(setdiff(unique(do.call("c",co_to_samples)),unique(do.call("c",co_to_samples[which((names(co_to_samples) %in% excludedTerms_env$co))]))),
+                  setdiff(unique(do.call("c",co_to_samples_char)),unique(do.call("c",co_to_samples_char[which((names(co_to_samples_char) %in% excludedTerms_env$co))])))
                  )
-  idx_to <- union(setdiff(unique(do.call("c",to_to_samples)),unique(do.call("c",to_to_samples[which((names(to_to_samples) %in% MultiTIMER::excludedTerms_env$to))]))),
-                  setdiff(unique(do.call("c",to_to_samples_char)),unique(do.call("c",to_to_samples_char[which((names(to_to_samples_char) %in% MultiTIMER::excludedTerms_env$to))])))
+  idx_to <- union(setdiff(unique(do.call("c",to_to_samples)),unique(do.call("c",to_to_samples[which((names(to_to_samples) %in% excludedTerms_env$to))]))),
+                  setdiff(unique(do.call("c",to_to_samples_char)),unique(do.call("c",to_to_samples_char[which((names(to_to_samples_char) %in% excludedTerms_env$to))])))
                  )
 
   samples_to_consider <- intersect(idx_total,union(idx_to,idx_co))
@@ -197,7 +197,7 @@ selectArchS4Samples <- function(archs4_file = NULL,
   age_info <- stringr::str_extract(char[withAge],"(?<=\t|^)\\s*\\b([Aa]ge)\\b(.)*?(?=\t|$)")
   names(age_info) <- geoid[withAge]
 
-  idx_excludedPhrases <- sapply(MultiTIMER::excludedTerms_env$age,function(x){which(grepl(x,age_info,ignore.case = T))})
+  idx_excludedPhrases <- sapply(excludedTerms_env$age,function(x){which(grepl(x,age_info,ignore.case = T))})
   idx_excludedPhrases <- unique(do.call("c",idx_excludedPhrases))
   idx_excludedPhrases <- unique(c(idx_excludedPhrases,which(is.na(age_info))))
 
