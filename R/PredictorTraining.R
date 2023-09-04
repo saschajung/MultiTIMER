@@ -14,12 +14,12 @@ trainModel <- function(trainExpr,
                        trainSamples = NULL,
                        legacy = FALSE
 ){
-  all_procs <- setdiff(unique(MultiTIMER::mbotc$ProcessName),"Background genes")
-  genes_to_procs <- lapply(all_procs,function(x){unique(MultiTIMER::mbotc$Symbol[MultiTIMER::mbotc$ProcessName == x])})
+  all_procs <- setdiff(unique(mbotc$ProcessName),"Background genes")
+  genes_to_procs <- lapply(all_procs,function(x){unique(mbotc$Symbol[mbotc$ProcessName == x])})
   names(genes_to_procs) <- all_procs
   genes_to_procs <- lapply(genes_to_procs,function(x){intersect(rownames(trainExpr),x)})
   genes_to_procs <- genes_to_procs[unname(which(sapply(genes_to_procs,length) >= 3))]
-  level_to_procs <- sapply(names(genes_to_procs),function(x){unique(MultiTIMER::mbotc$ProcessLevel[MultiTIMER::mbotc$ProcessName == x])})
+  level_to_procs <- sapply(names(genes_to_procs),function(x){unique(mbotc$ProcessLevel[mbotc$ProcessName == x])})
   levels_to_consider <- c(1)
   level_to_procs <- level_to_procs[level_to_procs %in% levels_to_consider]
 
@@ -80,7 +80,7 @@ trainModel <- function(trainExpr,
 predictAge <- function(model,
                        predExpr
 ){
-  predExpr <- predExpr[model@model$names,]
+  predExpr <- predExpr[model@parameters$x,]
   predAges <- c()
   maxiter <- ceiling(ncol(predExpr)/1000)
   for(i in 1:maxiter){
@@ -111,8 +111,8 @@ predictAge <- function(model,
 getActivityMatrix <- function(model,
                               expr
 ){
-  all_procs <- setdiff(unique(MultiTIMER::mbotc$ProcessName),"Background genes")
-  genes_to_procs <- lapply(all_procs,function(x){unique(MultiTIMER::mbotc$Symbol[MultiTIMER::mbotc$ProcessName == x])})
+  all_procs <- setdiff(unique(mbotc$ProcessName),"Background genes")
+  genes_to_procs <- lapply(all_procs,function(x){unique(mbotc$Symbol[mbotc$ProcessName == x])})
   names(genes_to_procs) <- all_procs
   genes_to_procs <- lapply(genes_to_procs,function(x){intersect(rownames(expr),x)})
   genes_to_procs <- genes_to_procs[unname(which(sapply(genes_to_procs,length) >= 3))]
