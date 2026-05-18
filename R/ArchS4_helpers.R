@@ -98,7 +98,11 @@ selectArchS4Samples <- function(archs4_file = NULL,
   }
   samples <- rhdf5::h5read(archs4_file, "meta/samples/geo_accession")
   scProb <- rhdf5::h5read(archs4_file, "meta/samples/singlecellprobability")
-  readsTotal <- rhdf5::h5read(archs4_file, "meta/samples/readstotal")
+  readsTotal <- tryCatch({
+    rhdf5::h5read(archs4_file, "meta/samples/readstotal")
+  }, error = function(e) {
+    NULL  # Field absent in newer ArchS4 files
+  })
   readsAligned <- rhdf5::h5read(archs4_file, "meta/samples/readsaligned")
   libSelection <- rhdf5::h5read(archs4_file, "meta/samples/library_selection")
   libStrategy <- rhdf5::h5read(archs4_file, "meta/samples/library_strategy")
@@ -266,7 +270,11 @@ getSelectedSamplesArchS4 <- function(archs4File = NULL,
                                      seriesIDs = c(),
                                      legacy = FALSE){
 
-  genes = rhdf5::h5read(archs4File, "meta/genes/genes")
+  genes <- tryCatch({
+    rhdf5::h5read(archs4File, "meta/genes/symbol")
+  }, error = function(e) {
+    rhdf5::h5read(archs4File, "meta/genes/genes")  # Older ArchS4 layout
+  })
   geoid <- rhdf5::h5read(archs4File,"meta/samples/geo_accession")
   # Read full series_id vector directly; the `seriesIDs` argument is sub-indexed
   # (length = samples considered) and cannot be indexed with idx (full-H5 positions).
