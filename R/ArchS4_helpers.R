@@ -98,7 +98,11 @@ selectArchS4Samples <- function(archs4_file = NULL,
   }
   samples <- rhdf5::h5read(archs4_file, "meta/samples/geo_accession")
   scProb <- rhdf5::h5read(archs4_file, "meta/samples/singlecellprobability")
-  readsTotal <- rhdf5::h5read(archs4_file, "meta/samples/readstotal")
+  readsTotal <- tryCatch({
+    rhdf5::h5read(archs4_file, "meta/samples/readstotal")
+  }, error = function(e) {
+    NULL  # Field absent in newer ArchS4 files
+  })
   readsAligned <- rhdf5::h5read(archs4_file, "meta/samples/readsaligned")
   libSelection <- rhdf5::h5read(archs4_file, "meta/samples/library_selection")
   libStrategy <- rhdf5::h5read(archs4_file, "meta/samples/library_strategy")
@@ -255,7 +259,7 @@ getTrainingSamples <- function(archs4File = NULL,
 #'
 #' @param archs4File The path to the ArchS4 data file as obtained from getArchS4Data.
 #' @param SamplesToConsider All samples obtained from ArchS4 as returned in the \emph{samplesToConsider} field by \link{selectArchS4Samples}.
-#' @param seriesIDs The GEO series IDs as returned by \link{selectArchS4Samples}.
+#' @param seriesIDs Deprecated. The full series_id vector is now read directly from the ArchS4 file. Retained for signature compatibility; the value passed is ignored.
 #' @param legacy Should the legacy version be run that filters out genes based on a fixed threshold of mean expression? (default: FALSE)
 #'
 #' @return List of training samples and associated age information
@@ -266,8 +270,15 @@ getSelectedSamplesArchS4 <- function(archs4File = NULL,
                                      seriesIDs = c(),
                                      legacy = FALSE){
 
-  genes = rhdf5::h5read(archs4File, "meta/genes/genes")
+  genes <- tryCatch({
+    rhdf5::h5read(archs4File, "meta/genes/symbol")
+  }, error = function(e) {
+    rhdf5::h5read(archs4File, "meta/genes/genes")  # Older ArchS4 layout
+  })
   geoid <- rhdf5::h5read(archs4File,"meta/samples/geo_accession")
+  # Read full series_id vector directly; the `seriesIDs` argument is sub-indexed
+  # (length = samples considered) and cannot be indexed with idx (full-H5 positions).
+  series_full <- as.character(rhdf5::h5read(archs4File, "meta/samples/series_id"))
   idx <- match(SamplesToConsider,geoid)
   expression = t(rhdf5::h5read(archs4File, "data/expression", index=list(idx, 1:length(genes))))
   rhdf5::H5close()
@@ -294,7 +305,7 @@ getSelectedSamplesArchS4 <- function(archs4File = NULL,
     expression_tmm_cpm <- expression_tmm_cpm[idx_1,]
   }
 
-  series <- seriesIDs[idx]
+  series <- series_full[idx]
 
   batchid = match(series, unique(series))
   correctedExpression <- sva::ComBat(dat=expression_tmm_cpm, batch=batchid, par.prior=TRUE, prior.plots=FALSE)
